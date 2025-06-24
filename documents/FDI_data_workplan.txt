@@ -1,7 +1,32 @@
 STC-HERRING 1.2 FDI data usage workplan
 
+AIM 1 source FDI:
+Fleet general overview effort and catches (by country?): 
+where and when each metier is catching herring in Baltic (Between countries)
+-set metier threshold landings
+-"all trawlers in each metier more than 5%" in total by year? (Areas: all Baltic, northern Northsea??, Skagerrag & Kattegat) 
+-Norway is not in FDI. Different source..should be publicly available. Florian might know?
+-FDI data 2013-2023 is available 2024 will be at the end of 2025
+
+GOAL -> to map fishing activity in space and time.
+FOR -> 
+WP1.3 to identify scenarios (timeline: BY: Q3 = end of September)
+and 
+WP3 to select relevant vessels for modelling based on these overviews (BY: Q3 = end of September) 
+
+
 - which table A, G, H, I ?
+Table A is good to identify Fleets and to begin with.
+
+H and I for ICES Rectangle level outputs
 
 - tables / diagrams?
+Needed for identifying the fleets.
 
 - maps?
+Seasonal trends from table A (quarter)
+Something more specific on ICES Rectangle level based on Spatial tables (H and I)
+
+Perttu: vacation (7.7 - 3.8) free during August and next week
+Josefine: "Free" from 3.8 onwards
+Nicolas: available untill 21.8 ("off" 23.8-14.9)
