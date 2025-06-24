@@ -1,3 +1,7 @@
 STC-HERRING 1.2 FDI data usage workplan
 
 - which table A, G, H, I ?
+
+- tables / diagrams?
+
+- maps?
