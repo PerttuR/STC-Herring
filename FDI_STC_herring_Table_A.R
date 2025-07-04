@@ -1,9 +1,9 @@
 
 # PROJECT:     STC Herring
-# R VERSION:		0.0.1
+# R VERSION:		4.4.2
 # PROGRAMMED:		Perttu Rantanen
 # EDITS:        
-# UPDATE:       03.7.2025
+# UPDATE:       04.7.2025
 
 #clean the R environment
 #rm(list = ls())
@@ -83,7 +83,7 @@ FDI_LAN_HER_TRAWL_5_tons <- FDI_LAN_HER_TRAWL[FDI_LAN_HER_TRAWL$TON>5,]
 #FDI_LAN_HER_TRAWL_5_tons <- FDI_LAN_HER_TRAWL_5_tons %>% arrange(desc(year))
 sort(unique(FDI_LAN_HER_TRAWL_5_tons$year), decreasing = TRUE)
 
-#PLOT diagrams for gear = OTM 
+#PLOT diagrams for gear = all TRAWLS
 ggplot(FDI_LAN_HER_TRAWL_5_tons, aes(x=sub_region, y=TON)) +
   geom_bar(fill="#0073C2FF",stat="identity") +
   theme_bw() +  facet_grid(year~country) +
@@ -98,7 +98,7 @@ FDI_LAN_HER_FYKE_5_tons <- FDI_LAN_HER_FYKE[FDI_LAN_HER_FYKE$TON>5,]
 #sort(unique(FDI_LAN_HER_over_5_tons$sub_region))
 sort(unique(FDI_LAN_HER_FYKE_5_tons$year))
 
-#PLOT diagrams for gear = FYKES
+#PLOT diagrams for gear = all FYKES
 ggplot(FDI_LAN_HER_FYKE_5_tons, aes(x=sub_region, y=TON)) +
   geom_bar(fill="#0073C2FF",stat="identity") +
   theme_bw() +  facet_grid(year~country) +
@@ -114,7 +114,7 @@ FDI_LAN_HER_GILNETS_5_tons <- FDI_LAN_HER_GILNETS[FDI_LAN_HER_GILNETS$TON>5,]
 #sort(unique(FDI_LAN_HER_over_5_tons$sub_region))
 sort(unique(FDI_LAN_HER_GILNETS_5_tons$year))
 
-#PLOT diagrams for gear = FYKES
+#PLOT diagrams for gear = all GILLNETS
 ggplot(FDI_LAN_HER_GILNETS_5_tons, aes(x=sub_region, y=TON)) +
   geom_bar(fill="#0073C2FF",stat="identity") +
   theme_bw() +  facet_grid(year~country) +
