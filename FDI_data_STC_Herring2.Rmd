@@ -1,0 +1,1250 @@
+
+```{r title, include = FALSE}
+front_title <- "FDI data STC Herring"
+```
+
+<!-- The output directory below defines the path the html file will be saved at -->
+
+---
+title: `r front_title`
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_file = paste0(substr(inputFile,1,nchar(inputFile)-4),".html"), 
+  output_dir = "Q:/20-forskning/20-dfad/users/joeg/home/VMS/250318_CIBBRiNA/html")})
+output:
+  html_document:
+  css: styles.css
+fontsize: 12pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+options(scipen=999)
+```
+
+
+```{r libraries}
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(sf)
+```
+
+```{r source, message = FALSE, warning = FALSE}
+datapath <- "Q:\\20-forskning\\20-dfad\\data\\Data\\FDI_data_dissemination\\2024 DC\\"
+
+# Read FDI data
+landings2013_MS <- read.csv(paste(datapath,"2024_fdi_catches\\Catches\\FDI Catches by country2013.csv",sep=''))
+landings2014_MS <- read.csv(paste(datapath,"2024_fdi_catches\\Catches\\FDI Catches by country2014.csv",sep=''))
+landings2015_MS <- read.csv(paste(datapath,"2024_fdi_catches\\Catches\\FDI Catches by country2015.csv",sep=''))
+landings2016_MS <- read.csv(paste(datapath,"2024_fdi_catches\\Catches\\FDI Catches by country2016.csv",sep=''))
+landings2017_MS <- read.csv(paste(datapath,"2024_fdi_catches\\Catches\\FDI Catches by country2017.csv",sep=''))
+landings2018_MS <- read.csv(paste(datapath,"2024_fdi_catches\\Catches\\FDI Catches by country2018.csv",sep=''))
+landings2019_MS <- read.csv(paste(datapath,"2024_fdi_catches\\Catches\\FDI Catches by country2019.csv",sep=''))
+landings2020_MS <- read.csv(paste(datapath,"2024_fdi_catches\\Catches\\FDI Catches by country2020.csv",sep=''))
+landings2021_MS <- read.csv(paste(datapath,"2024_fdi_catches\\Catches\\FDI Catches by country2021.csv",sep=''))
+landings2022_MS <- read.csv(paste(datapath,"2024_fdi_catches\\Catches\\FDI Catches by country2022.csv",sep=''))
+landings2023_MS <- read.csv(paste(datapath,"2024_fdi_catches\\Catches\\FDI Catches by country2023.csv",sep=''))
+
+landings_MS <- rbind(landings2013_MS, landings2014_MS, landings2015_MS, landings2016_MS, landings2017_MS, landings2018_MS,
+                     landings2019_MS, landings2020_MS, landings2021_MS, landings2022_MS, landings2023_MS)
+
+landings2013_EU <- read.csv(paste(datapath,"2024_fdi_landings\\Landings\\FDI Landings EU 2013.csv",sep=""))
+landings2014_EU <- read.csv(paste(datapath,"2024_fdi_landings\\Landings\\FDI Landings EU 2014.csv",sep=""))
+landings2015_EU <- read.csv(paste(datapath,"2024_fdi_landings\\Landings\\FDI Landings EU 2015.csv",sep=""))
+landings2016_EU <- read.csv(paste(datapath,"2024_fdi_landings\\Landings\\FDI Landings EU 2016.csv",sep=""))
+landings2017_EU <- read.csv(paste(datapath,"2024_fdi_landings\\Landings\\FDI Landings EU 2017.csv",sep=""))
+landings2018_EU <- read.csv(paste(datapath,"2024_fdi_landings\\Landings\\FDI Landings EU 2018.csv",sep=""))
+landings2019_EU <- read.csv(paste(datapath,"2024_fdi_landings\\Landings\\FDI Landings EU 2019.csv",sep=""))
+landings2020_EU <- read.csv(paste(datapath,"2024_fdi_landings\\Landings\\FDI Landings EU 2020.csv",sep=""))
+landings2021_EU <- read.csv(paste(datapath,"2024_fdi_landings\\Landings\\FDI Landings EU 2021.csv",sep=""))
+landings2022_EU <- read.csv(paste(datapath,"2024_fdi_landings\\Landings\\FDI Landings EU 2022.csv",sep=""))
+landings2023_EU <- read.csv(paste(datapath,"2024_fdi_landings\\Landings\\FDI Landings EU 2023.csv",sep=""))
+
+landings_EU <- rbind(landings2013_EU, landings2014_EU, landings2015_EU, landings2016_EU, landings2017_EU, landings2018_EU,
+                     landings2019_EU, landings2020_EU, landings2021_EU, landings2022_EU, landings2023_EU)
+
+
+landings2013_rect <- read.csv(paste(datapath, "spatial_landings_tableau_pts_2013_EU27.csv", sep=""))
+landings2014_rect <- read.csv(paste(datapath, "spatial_landings_tableau_pts_2014_EU27.csv", sep=""))
+landings2015_rect <- read.csv(paste(datapath, "spatial_landings_tableau_pts_2015_EU27.csv", sep=""))
+landings2016_rect <- read.csv(paste(datapath, "spatial_landings_tableau_pts_2016_EU27.csv", sep=""))
+landings2017_rect <- read.csv(paste(datapath, "spatial_landings_tableau_pts_2017_EU27.csv", sep=""))
+landings2018_rect <- read.csv(paste(datapath, "spatial_landings_tableau_pts_2018_EU27.csv", sep=""))
+landings2019_rect <- read.csv(paste(datapath, "spatial_landings_tableau_pts_2019_EU27.csv", sep=""))
+landings2020_rect <- read.csv(paste(datapath, "spatial_landings_tableau_pts_2020_EU27.csv", sep=""))
+landings2021_rect <- read.csv(paste(datapath, "spatial_landings_tableau_pts_2021_EU27.csv", sep=""))
+landings2022_rect <- read.csv(paste(datapath, "spatial_landings_tableau_pts_2022_EU27.csv", sep=""))
+landings2023_rect <- read.csv(paste(datapath, "spatial_landings_tableau_pts_2023_EU27.csv", sep=""))
+
+landings_rect <- rbind(landings2013_rect, landings2014_rect, landings2015_rect, landings2016_rect, landings2017_rect, landings2018_rect,
+                     landings2019_rect, landings2020_rect, landings2021_rect, landings2022_rect, landings2023_rect)
+
+
+# Area
+landings_MS$area <- tolower(landings_MS$sub_region)
+landings_EU$area <- tolower(landings_EU$Sub.region)
+landings_rect$area <- tolower(landings_rect$sub_region)
+
+#Area shapefile
+area <- st_read("Q:\\20-forskning\\12-gis\\Dynamisk\\GEOdata2020\\BasicLayers\\Boundaries\\ICES\\ICES_Areas_20160601_cut_dense_3857.shp", quiet = TRUE)
+
+area$area <- area$Area_Full
+area <- subset(area, select=c(area, geometry))
+
+area2 <- area %>%
+  group_by(area) %>%
+  summarise(geometry = st_union(geometry), .groups = "drop") %>%
+  st_as_sf()
+
+#Rectangle shapefile
+rect <- st_read("Q:\\20-forskning\\12-gis\\Dynamisk\\GEOdata2020\\BasicLayers\\Boundaries\\ICES\\ICES_Statistical_Rectangles_Eco.shp", quiet = TRUE)
+
+rect$icesname <- rect$ICESNAME
+rect <- subset(rect, select=c(icesname, geometry))
+
+```
+
+## FDI data for STC Herring
+
+Public data from EU STECF Fisheries Dependent Information data call are downloaded from: https://stecf.ec.europa.eu/data-dissemination/fdi_en
+
+Data are filtered to match the STC study area: Baltic Sea, Kattegat, Skagerrak, Northern North Sea
+
+```{r fleets}
+
+#Define study fleets
+
+landings_MS$CSfleet <- ''
+landings_EU$CSfleet <- ''
+landings_rect$CSfleet <- ''
+
+landings_EU$CSfleet[landings_EU$area %in%  c("27.4.a", "27.3.a.20", "27.3.a.21", "27.3.b.23", "27.3.c.22", "27.3.d.24", "27.3.d.25", "27.3.d.26", "27.3.d.27", "27.3.d.28", "27.3.d.28.1", "27.3.d.28.2", "27.3.d.29", "27.3.d.30", "27.3.d.31", "27.3.d.32")] <- 'STC_Herring'
+
+landings_MS$CSfleet[landings_MS$area %in% c("27.4.a", "27.3.a.20", "27.3.a.21", "27.3.b.23", "27.3.c.22", "27.3.d.24", "27.3.d.25", "27.3.d.26", "27.3.d.27", "27.3.d.28", "27.3.d.28.1", "27.3.d.28.2", "27.3.d.29", "27.3.d.30", "27.3.d.31", "27.3.d.32")] <- 'STC_Herring'
+
+landings_rect$CSfleet[landings_rect$area %in% c("27.4.a", "27.3.a.20", "27.3.a.21", "27.3.b.23", "27.3.c.22", "27.3.d.24", "27.3.d.25", "27.3.d.26", "27.3.d.27", "27.3.d.28", "27.3.d.28.1", "27.3.d.28.2", "27.3.d.29", "27.3.d.30", "27.3.d.31", "27.3.d.32")] <- 'STC_Herring'
+
+
+landings_EU1 <- landings_EU %>% filter(landings_EU$CSfleet!='')
+landings_MS1 <- landings_MS %>% filter(landings_MS$CSfleet!='')
+landings_rect1 <- landings_rect %>% filter(landings_rect$CSfleet!='')
+
+landings_EU2 <- landings_EU1 %>% filter(is.na(EEZ.Indicator) | EEZ.Indicator != 'UK')
+landings_MS2 <- landings_MS1 %>% filter(is.na(eez_indicator) | eez_indicator != 'UK')
+landings_rect2 <- landings_rect1 
+
+
+```
+
+```{r Data}
+#Landings EU
+landings_EU2$TON_TOT <- landings_EU2$tot_live_weight_landed..tonnes.
+landings_EU2$TON_HER[landings_EU2$Species == "HER"] <- landings_EU2$TON_TOT[landings_EU2$Species == "HER"]
+
+#Landings by area and year
+FDI_landings_EU <- landings_EU2 %>%
+  group_by(CSfleet, area, Year) %>%
+  summarize(TON_TOT_EU=sum(TON_TOT, na.rm=T),TON_HER_EU=sum(TON_HER, na.rm=T))
+
+#Landings MS
+landings_MS2$TON_TOT <- landings_MS2$total_live_weight_landed
+landings_MS2$TON_TOT[landings_MS2$TON_TOT=='C'] <- 0
+landings_MS2$TON_TOT <- as.numeric(landings_MS2$TON_TOT)
+landings_MS2$TON_HER[landings_MS2$species == "HER"] <- landings_MS2$TON_TOT[landings_MS2$species == "HER"]
+landings_MS2$Year <- as.character(landings_MS2$year)
+
+FDI_landings_MS <- landings_MS2 %>%
+  group_by(CSfleet, area, country, Year) %>%
+  summarize(TON_TOT=sum(TON_TOT, na.rm=T),TON_HER=sum(TON_HER, na.rm=T))
+
+FDI_landings_MS_tot <- landings_MS2 %>%
+  group_by(CSfleet, area, Year) %>%
+  summarize(TON_TOT_MS=sum(TON_TOT, na.rm=T),TON_HER_MS=sum(TON_HER, na.rm=T))
+
+FDI_landings_join <- merge(FDI_landings_EU, FDI_landings_MS_tot, by=c('CSfleet','area','Year'))
+FDI_landings_join$TotLandingsConfidential <- FDI_landings_join$TON_TOT_EU - FDI_landings_join$TON_TOT_MS
+FDI_landings_join$HERLandingsConfidential <- FDI_landings_join$TON_HER_EU - FDI_landings_join$TON_HER_MS
+
+FDI_landings_confidential <- subset(FDI_landings_join, select=c(CSfleet, Year, area, TotLandingsConfidential, HERLandingsConfidential))
+FDI_landings_confidential$country <- 'Unknown'
+FDI_landings_confidential$TON_TOT <- FDI_landings_confidential$TotLandingsConfidential
+FDI_landings_confidential$TON_HER <- FDI_landings_confidential$HERLandingsConfidential
+FDI_landings_confidential <- subset(FDI_landings_confidential, select=c(CSfleet, country, Year, area, TON_TOT, TON_HER))
+
+FDI_landings_confidential$Year <- as.character(FDI_landings_confidential$Year)
+FDI_landings_MS_tot <- rbind(FDI_landings_MS, FDI_landings_confidential)
+
+# Gear
+#landings2023_EU$gear_lvl4 <- substr(landings2023_EU$Metier, 1,3)
+#landings2023_MS$gear_lvl4 <- substr(landings2023_MS$metier, 1,3)
+#landings2023_rect$gear_lvl4 <- substr(landings2023_rect$metier, 1,3)
+
+
+country_colors <- c(
+  "Belgium"        = "#17becf",  # cyan
+  "Denmark"        = "#d62728",  # red
+  "Estonia"        = "#f7b6d2",  # light pink
+  "Finland"        = "#98df8a",  # light green
+  "France"         = "#aec7e8",  # light blue
+  "Germany"        = "#ff7f0e",  # orange
+  "Ireland"        = "#bcbd22",  # olive
+  "Latvia"         = "#c49c94",  # tan
+  "Lithuania"      = "#c5b0d5",  # light purple
+  "Netherlands"    = "#7f7f7f",  # gray
+  "Poland"         = "#2ca02c",  # green
+  "Portugal"       = "#e377c2",  # pink
+  "Spain"          = "#9467bd",  # purple
+  "Sweden"         = "#1f77b4",  # blue
+  "United Kingdom" = "#8c564b",  # brown
+  "Unknown"        = "#cccccc"   # light gray
+)
+
+vessel_length_colors <- c(
+  "NK"      = "#d9d9d9",  # neutral gray for unknown
+  "VL0008"  = "#c6dbef",  # light blue
+  "VL0010"  = "#9ecae1",  # slightly darker blue
+  "VL0612"  = "#6baed6",  # medium blue
+  "VL0812"  = "#4292c6",  # deeper blue
+  "VL1012"  = "#2171b5",  # stronger blue
+  "VL1218"  = "#08519c",  # dark blue
+  "VL1824"  = "#08306b",  # very dark blue
+  "VL2440"  = "#6a51a3",  # purple
+  "VL40XX"  = "#4a1486"   # deep purple
+)
+
+```
+
+
+```{r Spatial, message = FALSE, warning = FALSE}
+#Average Landings by rectangle and metier
+landings_rect2$TON_TOT <- landings_rect2$totwghtlandg
+landings_rect2$TON_HER[landings_rect2$species == "HER"] <- landings_rect2$TON_TOT[landings_rect2$species == "HER"]
+
+#Group some metiers
+landings_rect2$metier_gr <- landings_rect2$metier
+landings_rect2$metier_gr[landings_rect2$metier_gr %in% c('OTM_SPF_32-89_0_0', 'PTM_SPF_32-89_0_0')] <- 'OTM_SPF_32-89_0_0'
+landings_rect2$metier_gr[landings_rect2$metier_gr %in% c('OTM_SPF_16-31_0_0', 'PTM_SPF_16-31_0_0')] <- 'OTM_SPF_16-31_0_0'
+landings_rect2$metier_gr[landings_rect2$metier_gr %in% c('OTM_SPF_>0_0_0', 'PTM_SPF_>0_0_0')] <- 'OTM_SPF_>0_0_0'
+landings_rect2$metier_gr[landings_rect2$metier_gr %in% c('OTM_SPF_32-69_0_0', 'PTM_SPF_32-69_0_0')] <- 'OTM_SPF_32-69_0_0'
+
+landings_rect_y <- landings_rect2 %>% filter(species=='HER') %>%
+  group_by(year, metier_gr, icesname) %>%
+  summarize(TON_HER=sum(TON_HER, na.rm=T))
+
+landings_rect_y2 <- landings_rect_y %>% 
+  group_by(metier_gr, icesname) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T))
+
+#Select relevant metiers
+HER_OTM_SPF_32t89 <- landings_rect_y2[landings_rect_y2$metier_gr=="OTM_SPF_32-89_0_0",]
+HER_GNS_SPF_32t89 <- landings_rect_y2[landings_rect_y2$metier_gr=="GNS_SPF_32-89_0_0",]
+HER_OTM_SPF_16t31 <- landings_rect_y2[landings_rect_y2$metier_gr=="OTM_SPF_16-31_0_0",]
+HER_OTM_SPF_gt0 <- landings_rect_y2[landings_rect_y2$metier_gr=="OTM_SPF_>0_0_0",]
+HER_OTM_SPF_32t69 <- landings_rect_y2[landings_rect_y2$metier_gr=="OTM_SPF_32-69_0_0",]
+HER_PS_SPF_16t31 <- landings_rect_y2[landings_rect_y2$metier_gr=="PS_SPF_16-31_0_0",]
+
+#Export as shapefiles
+HER_OTM_SPF_32t89_geo <- merge(HER_OTM_SPF_32t89, rect, by="icesname", all.x=TRUE)
+suppressWarnings(suppressMessages(st_write(HER_OTM_SPF_32t89_geo, "Q:\\20-forskning\\20-dfad\\users\\joeg\\home\\VMS\\250211_STC_Herring\\Shp\\FDI_HER_OTM_SPF_32t89.shp", delete_dsn = TRUE, quiet = TRUE)))
+
+HER_GNS_SPF_32t89_geo <- merge(HER_GNS_SPF_32t89, rect, by="icesname", all.x=TRUE)
+suppressWarnings(suppressMessages(st_write(HER_GNS_SPF_32t89_geo , "Q:\\20-forskning\\20-dfad\\users\\joeg\\home\\VMS\\250211_STC_Herring\\Shp\\FDI_HER_GNS_SPF_32t89.shp", delete_dsn = TRUE, quiet = TRUE)))
+
+HER_OTM_SPF_16t31_geo <- merge(HER_OTM_SPF_16t31, rect, by="icesname", all.x=TRUE)
+suppressWarnings(suppressMessages(st_write(HER_OTM_SPF_16t31_geo, "Q:\\20-forskning\\20-dfad\\users\\joeg\\home\\VMS\\250211_STC_Herring\\Shp\\FDI_HER_OTM_SPF_16t31.shp", delete_dsn = TRUE, quiet = TRUE)))
+
+HER_OTM_SPF_gt0_geo <- merge(HER_OTM_SPF_gt0, rect, by="icesname", all.x=TRUE)
+suppressWarnings(suppressMessages(st_write(HER_OTM_SPF_gt0_geo, "Q:\\20-forskning\\20-dfad\\users\\joeg\\home\\VMS\\250211_STC_Herring\\Shp\\FDI_HER_OTM_SPF_gt0.shp", delete_dsn = TRUE, quiet = TRUE)))
+
+HER_OTM_SPF_32t69_geo <- merge(HER_OTM_SPF_32t69, rect, by="icesname", all.x=TRUE)
+suppressWarnings(suppressMessages(st_write(HER_OTM_SPF_32t69_geo, "Q:\\20-forskning\\20-dfad\\users\\joeg\\home\\VMS\\250211_STC_Herring\\Shp\\FDI_HER_OTM_SPF_32t69.shp", delete_dsn = TRUE, quiet = TRUE)))
+
+HER_PS_SPF_16t31_geo <- merge(HER_PS_SPF_16t31, rect, by="icesname", all.x=TRUE)
+suppressWarnings(suppressMessages(st_write(HER_PS_SPF_16t31_geo, "Q:\\20-forskning\\20-dfad\\users\\joeg\\home\\VMS\\250211_STC_Herring\\Shp\\FDI_HER_PS_SPF_16t31.shp", delete_dsn = TRUE, quiet = TRUE)))
+
+```
+
+## Landings by year {.tabset}
+
+Landings of herring by year reported to EU FDI data call. Graphs by areas SD22424, SD25-32, 3a and 4a (excluding UK EEZ where possible, this was a recent addition to the data call, so not reported by UK).
+
+The first plot is reported landing of herring in EU total, the second is by EU MS (not including what has been marked as confidential). The third plot is adding the part that has been marked as confidential, therefore the country i unknown.
+
+### Herring landings by year SD22-24
+
+```{r Y1, fig.dim= c(8, 6)}
+FDI_landings_EU_year <- FDI_landings_EU %>% filter(area %in% c('27.3.c.22', "27.3.b.23", "27.3.d.24" )) %>% group_by(Year) %>%
+  summarize(TON_HER_EU=mean(TON_HER_EU, na.rm=T))
+
+ggplot(FDI_landings_EU_year, aes(x = factor(Year), y = TON_HER_EU)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(title = paste("FDI landings - STC-Herring EU"), x = "Year", y = "Herring (ton)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+FDI_landings_MS_year <- FDI_landings_MS %>% filter(area %in% c('27.3.c.22', "27.3.b.23", "27.3.d.24" )) %>% group_by(Year, country) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T))
+
+ggplot(FDI_landings_MS_year, aes(x = factor(Year), y = TON_HER, fill=country)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = country_colors) +
+  labs(title = paste("FDI landings - STC-Herring EU MS"), x = "Year", y = "Herring (ton)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+FDI_landings_MS_tot_year <- FDI_landings_MS_tot %>% filter(area %in% c('27.3.c.22', "27.3.b.23", "27.3.d.24" )) %>% group_by(Year, country) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T))
+
+ggplot(FDI_landings_MS_tot_year, aes(x = factor(Year), y = TON_HER, fill=country)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = country_colors) +
+  labs(title = paste("FDI landings - STC-Herring EU MS"), x = "Year", y = "Herring (ton)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+
+### Herring landings by year SD25-32
+```{r Y2, fig.dim= c(8, 6)}
+FDI_landings_EU_year <- FDI_landings_EU %>% filter(area %in% c("27.3.d.25", "27.3.d.26",  
+"27.3.d.27" ,"27.3.d.28.1" ,"27.3.d.28.2", "27.3.d.29", "27.3.d.30", "27.3.d.31","27.3.d.32")) %>% group_by(Year) %>%
+  summarize(TON_HER_EU=mean(TON_HER_EU, na.rm=T))
+
+ggplot(FDI_landings_EU_year, aes(x = factor(Year), y = TON_HER_EU)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(title = paste("FDI landings - STC-Herring EU"), x = "Year", y = "Herring (ton)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+FDI_landings_MS_year <- FDI_landings_MS  %>% filter(area %in% c("27.3.d.25", "27.3.d.26",  
+"27.3.d.27" ,"27.3.d.28.1" ,"27.3.d.28.2", "27.3.d.29", "27.3.d.30", "27.3.d.31","27.3.d.32")) %>% group_by(Year, country) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T))
+
+ggplot(FDI_landings_MS_year, aes(x = factor(Year), y = TON_HER, fill=country)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = country_colors) +
+  labs(title = paste("FDI landings - STC-Herring EU MS"), x = "Year", y = "Herring (ton)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+FDI_landings_MS_tot_year <- FDI_landings_MS_tot  %>% filter(area %in% c("27.3.d.25", "27.3.d.26",  
+"27.3.d.27" ,"27.3.d.28.1" ,"27.3.d.28.2", "27.3.d.29", "27.3.d.30", "27.3.d.31","27.3.d.32")) %>% group_by(Year, country) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T))
+
+ggplot(FDI_landings_MS_tot_year, aes(x = factor(Year), y = TON_HER, fill=country)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = country_colors) +
+  labs(title = paste("FDI landings - STC-Herring EU MS"), x = "Year", y = "Herring (ton)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+### Herring landings by year 3a
+```{r Y3, fig.dim= c(8, 6)}
+FDI_landings_EU_year <- FDI_landings_EU %>% filter(area %in% c("27.3.a.20","27.3.a.21")) %>% group_by(Year) %>%
+  summarize(TON_HER_EU=mean(TON_HER_EU, na.rm=T))
+
+ggplot(FDI_landings_EU_year, aes(x = factor(Year), y = TON_HER_EU)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(title = paste("FDI landings - STC-Herring EU"), x = "Year", y = "Herring (ton)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+FDI_landings_MS_year <- FDI_landings_MS  %>% filter(area %in% c("27.3.a.20","27.3.a.21")) %>% group_by(Year, country) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T))
+
+ggplot(FDI_landings_MS_year, aes(x = factor(Year), y = TON_HER, fill=country)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = country_colors) +
+  labs(title = paste("FDI landings - STC-Herring EU MS"), x = "Year", y = "Herring (ton)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+FDI_landings_MS_tot_year <- FDI_landings_MS_tot  %>% filter(area %in% c("27.3.a.20","27.3.a.21")) %>% group_by(Year, country) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T))
+
+ggplot(FDI_landings_MS_tot_year, aes(x = factor(Year), y = TON_HER, fill=country)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = country_colors) +
+  labs(title = paste("FDI landings - STC-Herring EU MS"), x = "Year", y = "Herring (ton)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+
+### Herring landings by year 4a
+```{r Y4, fig.dim= c(8, 6)}
+FDI_landings_EU_year <- FDI_landings_EU %>% filter(area %in% c("27.4.a" )) %>% group_by(Year) %>%
+  summarize(TON_HER_EU=mean(TON_HER_EU, na.rm=T))
+
+ggplot(FDI_landings_EU_year, aes(x = factor(Year), y = TON_HER_EU)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(title = paste("FDI landings - STC-Herring EU"), x = "Year", y = "Herring (ton)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+FDI_landings_MS_year <- FDI_landings_MS  %>% filter(area %in% c("27.4.a" )) %>% group_by(Year, country) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T))
+
+ggplot(FDI_landings_MS_year, aes(x = factor(Year), y = TON_HER, fill=country)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = country_colors) +
+  labs(title = paste("FDI landings - STC-Herring EU MS"), x = "Year", y = "Herring (ton)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+FDI_landings_MS_tot_year <- FDI_landings_MS_tot  %>% filter(area %in% c("27.4.a" )) %>% group_by(Year, country) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T))
+
+ggplot(FDI_landings_MS_tot_year, aes(x = factor(Year), y = TON_HER, fill=country)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = country_colors) +
+  labs(title = paste("FDI landings - STC-Herring EU MS"), x = "Year", y = "Herring (ton)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+
+## Landings by area {.tabset}
+
+
+### Herring landings by area
+
+Average herring landings by year 2013-2023, plotted by area.
+
+The first plot is showing the total herring landings by area. The EU level can only be filtered by gears and areas, and not by country.
+
+The second plot is showing the total herring landings by area and country. When submitting data to the FDI the country can mark data as confidential, typically if there are less than 3 vessels in the aggregation level of data submission. Therefore a part of the effort is missing in this plot.
+
+The third plot is showing the total herring landings by area. The Country level is filtered by the CS countries, gears and areas. When submitting data to the FDI the country can mark data as confidential, typically if there are less than 3 vessels in the aggregation level of data submission. In this plot, the difference between the effort on EU level and the country level is added as 'Unknown'. This difference can be due to data marked as confidential, but can also be due to other MS than the ones defined in the case study have fishing effort in this fleet.
+
+
+```{r L1, fig.dim= c(8, 6)}
+FDI_landings_EU_area <- FDI_landings_EU %>% group_by(area) %>%
+  summarize(TON_HER_EU=mean(TON_HER_EU, na.rm=T))
+
+ggplot(FDI_landings_EU_area, aes(x = factor(area), y = TON_HER_EU)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(title = paste("FDI landings - STC-Herring EU"), x = "Area", y = "Average annual herring landings 2013-2023 (ton)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+FDI_landings_MS_area <- FDI_landings_MS %>% group_by(area, country) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T))
+
+ggplot(FDI_landings_MS_area, aes(x = factor(area), y = TON_HER, fill=country)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = country_colors) +
+  labs(title = paste("FDI landings - STC-Herring EU MS"), x = "Area", y = "Average annual herring landings 2013-2023 (ton)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+FDI_landings_MS_tot_area <- FDI_landings_MS_tot %>% group_by(area, country) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T))
+
+ggplot(FDI_landings_MS_tot_area, aes(x = factor(area), y = TON_HER, fill=country)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = country_colors) +
+  labs(title = paste("FDI landings - STC-Herring EU MS"), x = "Area", y = "Herring (ton)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+
+### Vessel length
+
+Average herring landings by year 2013-2023 and vessel length.
+
+The first plot is showing the herring landings by vessel length categories at EU level. 
+
+The second plot is showing the herring landings by vessel length categories at country level, where the y-axis is not fixed. 
+
+The third plot is showing the herring landings by vessel length categories at country level, where the y-axis is fixed, so it is easier to get an overview of the relative fishing effort by MS. 
+
+The fourth plot is showing the herring landings by vessel length categories at country level, where the y-axis is shown as percentage.
+
+Note that after 2021, there was a requirement to report the vessel length in group 0-8 m in the Baltic, and 0-10 m in other areas. In the other years the vessel length category to report was 0-10 m.
+
+
+```{r VL1_1, fig.dim= c(6, 4)}
+HER_VL_EU1 <- landings_EU2 %>% group_by(Year, area,  Vessel.Length.Category) %>%
+  summarize(TON_HER=sum(TON_HER, na.rm=T))
+
+HER_VL_EU2 <- HER_VL_EU1 %>% group_by(area,  Vessel.Length.Category) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T))
+
+ggplot(HER_VL_EU2, aes(x = factor(area), y = TON_HER, fill=Vessel.Length.Category)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = vessel_length_colors) +
+  labs(title = paste("FDI herring landings - EU"), x = "Area", y = "Average annual herring landings 2013-2023 (ton)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+```{r VL1_2, fig.height=12, fig.width=8}
+
+HER_VL_MS1 <- landings_MS2 %>% filter(country %in% c('Denmark','Estonia','Finland','Germany','Latvia','Lithuania','Poland','Sweden','United Kingdom')) %>% group_by(Year, area, country, vessel_length) %>%
+  summarise(TON_HER=sum(TON_HER, na.rm=T))
+
+HER_VL_MS2 <- HER_VL_MS1 %>% group_by(area, country, vessel_length) %>%
+  summarise(TON_HER=mean(TON_HER, na.rm=T))
+
+ggplot(HER_VL_MS2, aes(x = factor(area), y = TON_HER, fill = vessel_length)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = vessel_length_colors) +
+  facet_wrap(~ country, scales = "free_y", ncol=2) +
+  labs(
+    title = "FDI herring landings by country and Vessel Length - variable y axis",
+    x = "Area",
+    y = "Herring (ton)",
+    fill = "Vessel Length"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    strip.text = element_text(face = "bold")
+  )
+
+ggplot(HER_VL_MS2, aes(x = factor(area), y = TON_HER, fill = vessel_length)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = vessel_length_colors) +
+  facet_wrap(~ country) +
+  labs(
+    title = "FDI herring landings by country and Vessel Length - fixed y axis",
+    x = "Area",
+    y = "Average annual herring landings 2013-2023 (ton)",
+    fill = "Vessel Length"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    strip.text = element_text(face = "bold")
+  )
+
+ggplot(HER_VL_MS2, aes(x = factor(area), y = TON_HER, fill = vessel_length)) +
+  geom_bar(stat = "identity", position = "fill") +
+  scale_fill_manual(values = vessel_length_colors) +
+  facet_wrap(~ country, scales = "free_x") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+    title = "FDI herring landings by country and Vessel Length - percentage y axis",
+    x = "Area",
+    y = "% average annual herring landings 2013-2023",
+    fill = "Vessel Length"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    strip.text = element_text(face = "bold")
+  )
+
+```
+
+
+### Metier level 6 22-24
+
+Average landings by year 2013-2023, subdivisions 22-24
+
+The metier level 6 is defined in the DCF EU-MAP and is managed by the RCG ISSG Metier and transversal variables, and used for reporting in FDI and ICES data calls. The code has the components 'Gear'_'Target species assemblage'_'Mesh size range'_'Selection devices'. See more documentation at: https://github.com/ices-eg/RCGs/tree/master/Metiers.
+
+Note: There can be a difference between the gears reported in the GEAR_TYPE variable and in the Metier code on level 4.
+
+As there are many minor metier codes, only the top 10 metier codes by fishing days are shown in the plot below, the rest are grouped into 'Other'.
+
+The first plot is showing the herring landings by metier level at EU level. 
+
+The second plot is showing the herring landings by metier level 6 at country level, where the y-axis is not fixed. 
+
+The third plot is showing the herring landings by metier level 6 at country level, where the y-axis is fixed, so it is easier to get an overview of the relative fishing effort by MS. 
+
+The fourth plot is showing the herring landings by metier level 6 within CS fleet at country level, where the y-axis is shown as percentage.
+
+
+```{r M1, fig.dim= c(6, 4)}
+HER_Metier_EU1 <- landings_EU2 %>% filter(area %in% c("27.3.b.23","27.3.c.22","27.3.d.24")) %>% group_by(Year, Metier) %>%
+  summarize(TON_HER=sum(TON_HER, na.rm=T), TON_TOT=sum(TON_TOT, na.rm=T))
+
+HER_Metier_EU2 <- HER_Metier_EU1 %>% group_by(Metier) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T), TON_TOT=mean(TON_TOT, na.rm=T))
+
+HER_Metier_EU3 <- HER_Metier_EU2[HER_Metier_EU2$TON_HER>10,]
+
+ggplot(HER_Metier_EU3, aes(x = reorder(Metier, -TON_HER), y = TON_HER)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(
+    title = "Landings of Herring (HER) by Metier",
+    x = "Metier",
+    y = "Avererage annual landings of Herring 2013-2023 (ton)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+HER_Metier_EU2$pct_HER <- (HER_Metier_EU2$TON_HER / HER_Metier_EU2$TON_TOT) * 100
+
+HER_Metier_EU2_sort <- HER_Metier_EU2 %>% filter(pct_HER>20) %>%
+  arrange(desc(pct_HER))
+
+ggplot(HER_Metier_EU2_sort, aes(x = reorder(Metier, -pct_HER), y = pct_HER)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(
+    title = "Percentage of Herring (HER) by Metier",
+    x = "Metier",
+    y = "Avererage annual percentage of Herring landings 2013-2023 (pct_HER)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+HER_Metier_EU1 <- landings_EU2 %>% filter(area %in% c("27.3.b.23","27.3.c.22","27.3.d.24")) %>% group_by(Year, area, Metier) %>%
+  summarize(TON_HER=sum(TON_HER, na.rm=T), TON_TOT=sum(TON_TOT, na.rm=T))
+
+HER_Metier_EU2 <- HER_Metier_EU1 %>% group_by(area, Metier) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T), TON_TOT=mean(TON_TOT, na.rm=T))
+
+# Find top 10 Metiers by total fishing days
+top_metiers <- HER_Metier_EU2 %>%
+  group_by(Metier) %>%
+  summarise(Total = sum(TON_HER)) %>%
+  top_n(10, Total) %>%
+  pull(Metier)
+
+# Relabel others as "Other"
+HER_Metier_EU2 <- HER_Metier_EU2 %>%
+  mutate(Metier = ifelse(Metier %in% top_metiers, Metier, "Other"))
+
+# Define color vector
+metier_colors <- setNames(
+  RColorBrewer::brewer.pal(10, "Set3"),  # 10 distinct colors
+  top_metiers
+)
+metier_colors["Other"] <- "#B0B0B0"  # Light grey for 'Other'
+
+ggplot(HER_Metier_EU2, aes(x = factor(area), y = TON_HER, fill = Metier)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = metier_colors) +
+  labs(title = "FDI herring landings EU (Top 10 Metiers)", 
+       x = "Area", y = "Average annual herring landings 2013-2023 (ton)", fill = "Top 10 metiers") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+#by MS
+HER_Metier_MS1 <- landings_MS2 %>% filter(area %in% c("27.3.b.23","27.3.c.22","27.3.d.24") & country %in% c('Denmark','Estonia','Finland','Germany','Latvia','Lithuania','Poland','Sweden','United Kingdom')) %>% group_by(Year, area, country, metier) %>%
+  summarise(TON_HER=sum(TON_HER, na.rm=T))
+
+HER_Metier_MS2 <- HER_Metier_MS1 %>% group_by(area, country, metier) %>%
+  summarise(TON_HER=mean(TON_HER, na.rm=T))
+
+# Find top 10 Metiers by total fishing days
+top_metiersMS <- HER_Metier_MS2 %>%
+  group_by(metier) %>%
+  summarise(Total = sum(TON_HER)) %>%
+  top_n(10, Total) %>%
+  pull(metier)
+
+# Relabel others as "Other"
+HER_Metier_MS2 <- HER_Metier_MS2 %>%
+  mutate(metier = ifelse(metier %in% top_metiersMS, metier, "Other"))
+
+# Define color vector
+metier_colors <- setNames(
+  RColorBrewer::brewer.pal(10, "Set3"),  # 10 distinct colors
+  top_metiersMS
+)
+metier_colors["Other"] <- "#B0B0B0"  # Light grey for 'Other'
+
+ggplot(HER_Metier_MS2, aes(x = factor(area), y = TON_HER, fill = metier)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = metier_colors) +
+  facet_wrap(~ country, scales = "free_y") +
+  labs(
+    title = "FDI herring landings by area and Metier - variable y axis",
+    x = "Area",
+    y = "Average annual herring landings 2013-2023 (ton)",
+    fill = "Top 10 metiers"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    strip.text = element_text(face = "bold")
+  )
+
+ggplot(HER_Metier_MS2, aes(x = factor(area), y = TON_HER, fill = metier)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = metier_colors) +
+  facet_wrap(~ country) +
+  labs(
+    title = "FDI herring landings by area and Metier - fixed y axis",
+    x = "Area",
+    y = "Average annual herring landings 2013-2023 (ton)",
+    fill = "Top 10 metiers"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    strip.text = element_text(face = "bold")
+  )
+
+ggplot(HER_Metier_MS2, aes(x = factor(area), y = TON_HER, fill = metier)) +
+  geom_bar(stat = "identity", position = "fill") +
+  scale_fill_manual(values = metier_colors) +
+  facet_wrap(~ country, scales = "free_x") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+    title = "FDI Herring landings – % herring landings by Metier",
+    x = "Area",
+    y = "Average annual % herring landings 2013-2023",
+    fill = "Top 10 metiers"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    strip.text = element_text(face = "bold")
+  )
+
+```
+
+
+### Metier level 6 25-32
+
+Average landings by year 2013-2023, subdivisions 25-32
+
+The metier level 6 is defined in the DCF EU-MAP and is managed by the RCG ISSG Metier and transversal variables, and used for reporting in FDI and ICES data calls. The code has the components 'Gear'_'Target species assemblage'_'Mesh size range'_'Selection devices'. See more documentation at: https://github.com/ices-eg/RCGs/tree/master/Metiers.
+
+Note: There can be a difference between the gears reported in the GEAR_TYPE variable and in the Metier code on level 4.
+
+As there are many minor metier codes, only the top 10 metier codes by fishing days are shown in the plot below, the rest are grouped into 'Other'.
+
+The first plot is showing the herring landings by metier level at EU level. 
+
+The second plot is showing the herring landings by metier level 6 at country level, where the y-axis is not fixed. 
+
+The third plot is showing the herring landings by metier level 6 at country level, where the y-axis is fixed, so it is easier to get an overview of the relative fishing effort by MS. 
+
+The fourth plot is showing the herring landings by metier level 6 within CS fleet at country level, where the y-axis is shown as percentage.
+
+
+```{r M2, fig.dim= c(6, 4)}
+HER_Metier_EU1 <- landings_EU2 %>% filter(area %in% c("27.3.d.25","27.3.d.26", "27.3.d.27",   "27.3.d.28.1","27.3.d.28.2","27.3.d.29","27.3.d.30", "27.3.d.31", "27.3.d.32")) %>% group_by(Year, Metier) %>%
+  summarize(TON_HER=sum(TON_HER, na.rm=T), TON_TOT=sum(TON_TOT, na.rm=T))
+
+HER_Metier_EU2 <- HER_Metier_EU1 %>% group_by(Metier) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T), TON_TOT=mean(TON_TOT, na.rm=T))
+
+HER_Metier_EU3 <- HER_Metier_EU2[HER_Metier_EU2$TON_HER>10,]
+
+ggplot(HER_Metier_EU3, aes(x = reorder(Metier, -TON_HER), y = TON_HER)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(
+    title = "Landings of Herring (HER) by Metier",
+    x = "Metier",
+    y = "Avererage annual landings of Herring 2013-2023 (ton)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+HER_Metier_EU2$pct_HER <- (HER_Metier_EU2$TON_HER / HER_Metier_EU2$TON_TOT) * 100
+
+HER_Metier_EU2_sort <- HER_Metier_EU2 %>% filter(pct_HER>20) %>%
+  arrange(desc(pct_HER))
+
+ggplot(HER_Metier_EU2_sort, aes(x = reorder(Metier, -pct_HER), y = pct_HER)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(
+    title = "Percentage of Herring (HER) by Metier",
+    x = "Metier",
+    y = "Avererage annual percentage of Herring landings 2013-2023 (pct_HER)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+HER_Metier_EU1 <- landings_EU2 %>% filter(area %in% c("27.3.d.25","27.3.d.26", "27.3.d.27",   "27.3.d.28.1","27.3.d.28.2","27.3.d.29","27.3.d.30", "27.3.d.31", "27.3.d.32")) %>% group_by(Year, area, Metier) %>%
+  summarize(TON_HER=sum(TON_HER, na.rm=T), TON_TOT=sum(TON_TOT, na.rm=T))
+
+HER_Metier_EU2 <- HER_Metier_EU1 %>% group_by(area, Metier) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T), TON_TOT=mean(TON_TOT, na.rm=T))
+
+# Find top 10 Metiers by total fishing days
+top_metiers <- HER_Metier_EU2 %>%
+  group_by(Metier) %>%
+  summarise(Total = sum(TON_HER)) %>%
+  top_n(10, Total) %>%
+  pull(Metier)
+
+# Relabel others as "Other"
+HER_Metier_EU2 <- HER_Metier_EU2 %>%
+  mutate(Metier = ifelse(Metier %in% top_metiers, Metier, "Other"))
+
+# Define color vector
+metier_colors <- setNames(
+  RColorBrewer::brewer.pal(10, "Set3"),  # 10 distinct colors
+  top_metiers
+)
+metier_colors["Other"] <- "#B0B0B0"  # Light grey for 'Other'
+
+ggplot(HER_Metier_EU2, aes(x = factor(area), y = TON_HER, fill = Metier)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = metier_colors) +
+  labs(title = "FDI herring landings - STC-Herring EU (Top 10 Metiers)", 
+       x = "Area", y = "Average annual herring landings 2013-2023 (ton)", fill = "Top 10 metiers") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+#by MS
+HER_Metier_MS1 <- landings_MS2 %>% filter(area %in% c("27.3.d.25","27.3.d.26", "27.3.d.27",   "27.3.d.28.1","27.3.d.28.2","27.3.d.29","27.3.d.30", "27.3.d.31", "27.3.d.32") & country %in% c('Denmark','Estonia','Finland','Germany','Latvia','Lithuania','Poland','Sweden','United Kingdom')) %>% group_by(Year, area, country, metier) %>%
+  summarise(TON_HER=sum(TON_HER, na.rm=T))
+
+HER_Metier_MS2 <- HER_Metier_MS1 %>% group_by(area, country, metier) %>%
+  summarise(TON_HER=mean(TON_HER, na.rm=T))
+
+# Find top 10 Metiers by total fishing days
+top_metiersMS <- HER_Metier_MS2 %>%
+  group_by(metier) %>%
+  summarise(Total = sum(TON_HER)) %>%
+  top_n(10, Total) %>%
+  pull(metier)
+
+# Relabel others as "Other"
+HER_Metier_MS2 <- HER_Metier_MS2 %>%
+  mutate(metier = ifelse(metier %in% top_metiersMS, metier, "Other"))
+
+# Define color vector
+metier_colors <- setNames(
+  RColorBrewer::brewer.pal(10, "Set3"),  # 10 distinct colors
+  top_metiersMS
+)
+metier_colors["Other"] <- "#B0B0B0"  # Light grey for 'Other'
+
+ggplot(HER_Metier_MS2, aes(x = factor(area), y = TON_HER, fill = metier)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = metier_colors) +
+  facet_wrap(~ country, scales = "free_y") +
+  labs(
+    title = "FDI herring landings by area and Metier - variable y axis",
+    x = "Area",
+    y = "Average annual herring landings 2013-2023 (ton)",
+    fill = "Top 10 metiers"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    strip.text = element_text(face = "bold")
+  )
+
+ggplot(HER_Metier_MS2, aes(x = factor(area), y = TON_HER, fill = metier)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = metier_colors) +
+  facet_wrap(~ country) +
+  labs(
+    title = "FDI herring landings by area and Metier - fixed y axis",
+    x = "Area",
+    y = "Average annual herring landings 2013-2023 (ton)",
+    fill = "Top 10 metiers"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    strip.text = element_text(face = "bold")
+  )
+
+ggplot(HER_Metier_MS2, aes(x = factor(area), y = TON_HER, fill = metier)) +
+  geom_bar(stat = "identity", position = "fill") +
+  scale_fill_manual(values = metier_colors) +
+  facet_wrap(~ country, scales = "free_x") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+    title = "FDI Herring landings – % herring landings by Metier",
+    x = "Area",
+    y = "Average annual % herring landings 2013-2023",
+    fill = "Top 10 metiers"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    strip.text = element_text(face = "bold")
+  )
+
+```
+
+
+
+### Metier level 6 3a
+
+Average landings by year 2013-2023, 3a
+
+The metier level 6 is defined in the DCF EU-MAP and is managed by the RCG ISSG Metier and transversal variables, and used for reporting in FDI and ICES data calls. The code has the components 'Gear'_'Target species assemblage'_'Mesh size range'_'Selection devices'. See more documentation at: https://github.com/ices-eg/RCGs/tree/master/Metiers.
+
+Note: There can be a difference between the gears reported in the GEAR_TYPE variable and in the Metier code on level 4.
+
+As there are many minor metier codes, only the top 10 metier codes by fishing days are shown in the plot below, the rest are grouped into 'Other'.
+
+The first plot is showing the herring landings by metier level at EU level. 
+
+The second plot is showing the herring landings by metier level 6 at country level, where the y-axis is not fixed. 
+
+The third plot is showing the herring landings by metier level 6 at country level, where the y-axis is fixed, so it is easier to get an overview of the relative fishing effort by MS. 
+
+The fourth plot is showing the herring landings by metier level 6 within CS fleet at country level, where the y-axis is shown as percentage.
+
+
+```{r M3, fig.dim= c(6, 4)}
+HER_Metier_EU1 <- landings_EU2 %>% filter(area %in% c("27.3.a.20","27.3.a.21")) %>% group_by(Year, Metier) %>%
+  summarize(TON_HER=sum(TON_HER, na.rm=T), TON_TOT=sum(TON_TOT, na.rm=T))
+
+HER_Metier_EU2 <- HER_Metier_EU1 %>% group_by(Metier) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T), TON_TOT=mean(TON_TOT, na.rm=T))
+
+HER_Metier_EU3 <- HER_Metier_EU2[HER_Metier_EU2$TON_HER>10,]
+
+ggplot(HER_Metier_EU3, aes(x = reorder(Metier, -TON_HER), y = TON_HER)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(
+    title = "Landings of Herring (HER) by Metier",
+    x = "Metier",
+    y = "Avererage annual landings of Herring 2013-2023 (ton)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+HER_Metier_EU2$pct_HER <- (HER_Metier_EU2$TON_HER / HER_Metier_EU2$TON_TOT) * 100
+
+HER_Metier_EU2_sort <- HER_Metier_EU2 %>% filter(pct_HER>20) %>%
+  arrange(desc(pct_HER))
+
+ggplot(HER_Metier_EU2_sort, aes(x = reorder(Metier, -pct_HER), y = pct_HER)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(
+    title = "Percentage of Herring (HER) by Metier",
+    x = "Metier",
+    y = "Avererage annual percentage of Herring landings 2013-2023 (pct_HER)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+HER_Metier_EU1 <- landings_EU2 %>% filter(area %in% c("27.3.a.20","27.3.a.21")) %>% group_by(Year, area, Metier) %>%
+  summarize(TON_HER=sum(TON_HER, na.rm=T), TON_TOT=sum(TON_TOT, na.rm=T))
+
+HER_Metier_EU2 <- HER_Metier_EU1 %>% group_by(area, Metier) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T), TON_TOT=mean(TON_TOT, na.rm=T))
+
+# Find top 10 Metiers by total fishing days
+top_metiers <- HER_Metier_EU2 %>%
+  group_by(Metier) %>%
+  summarise(Total = sum(TON_HER)) %>%
+  top_n(10, Total) %>%
+  pull(Metier)
+
+# Relabel others as "Other"
+HER_Metier_EU2 <- HER_Metier_EU2 %>%
+  mutate(Metier = ifelse(Metier %in% top_metiers, Metier, "Other"))
+
+# Define color vector
+metier_colors <- setNames(
+  RColorBrewer::brewer.pal(10, "Set3"),  # 10 distinct colors
+  top_metiers
+)
+metier_colors["Other"] <- "#B0B0B0"  # Light grey for 'Other'
+
+ggplot(HER_Metier_EU2, aes(x = factor(area), y = TON_HER, fill = Metier)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = metier_colors) +
+  labs(title = "FDI herring landings - STC-Herring EU (Top 10 Metiers)", 
+       x = "Area", y = "Average annual herring landings 2013-2023 (ton)", fill = "Top 10 metiers") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+#by MS
+HER_Metier_MS1 <- landings_MS2 %>% filter(area %in% c("27.3.a.20","27.3.a.21") & country %in% c('Denmark','Estonia','Finland','Germany','Latvia','Lithuania','Poland','Sweden','United Kingdom')) %>% group_by(Year, area, country, metier) %>%
+  summarise(TON_HER=sum(TON_HER, na.rm=T))
+
+HER_Metier_MS2 <- HER_Metier_MS1 %>% group_by(area, country, metier) %>%
+  summarise(TON_HER=mean(TON_HER, na.rm=T))
+
+# Find top 10 Metiers by total fishing days
+top_metiersMS <- HER_Metier_MS2 %>%
+  group_by(metier) %>%
+  summarise(Total = sum(TON_HER)) %>%
+  top_n(10, Total) %>%
+  pull(metier)
+
+# Relabel others as "Other"
+HER_Metier_MS2 <- HER_Metier_MS2 %>%
+  mutate(metier = ifelse(metier %in% top_metiersMS, metier, "Other"))
+
+# Define color vector
+metier_colors <- setNames(
+  RColorBrewer::brewer.pal(10, "Set3"),  # 10 distinct colors
+  top_metiersMS
+)
+metier_colors["Other"] <- "#B0B0B0"  # Light grey for 'Other'
+
+ggplot(HER_Metier_MS2, aes(x = factor(area), y = TON_HER, fill = metier)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = metier_colors) +
+  facet_wrap(~ country, scales = "free_y") +
+  labs(
+    title = "FDI herring landings by area and Metier - variable y axis",
+    x = "Area",
+    y = "Average annual herring landings 2013-2023 (ton)",
+    fill = "Top 10 metiers"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    strip.text = element_text(face = "bold")
+  )
+
+ggplot(HER_Metier_MS2, aes(x = factor(area), y = TON_HER, fill = metier)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = metier_colors) +
+  facet_wrap(~ country) +
+  labs(
+    title = "FDI herring landings by area and Metier - fixed y axis",
+    x = "Area",
+    y = "Average annual herring landings 2013-2023 (ton)",
+    fill = "Top 10 metiers"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    strip.text = element_text(face = "bold")
+  )
+
+ggplot(HER_Metier_MS2, aes(x = factor(area), y = TON_HER, fill = metier)) +
+  geom_bar(stat = "identity", position = "fill") +
+  scale_fill_manual(values = metier_colors) +
+  facet_wrap(~ country, scales = "free_x") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+    title = "FDI Herring landings – % herring landings by Metier",
+    x = "Area",
+    y = "Average annual % herring landings 2013-2023",
+    fill = "Top 10 metiers"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    strip.text = element_text(face = "bold")
+  )
+
+```
+
+
+### Metier level 6 4a
+
+Average landings by year 2013-2023, 4a
+
+The metier level 6 is defined in the DCF EU-MAP and is managed by the RCG ISSG Metier and transversal variables, and used for reporting in FDI and ICES data calls. The code has the components 'Gear'_'Target species assemblage'_'Mesh size range'_'Selection devices'. See more documentation at: https://github.com/ices-eg/RCGs/tree/master/Metiers.
+
+Note: There can be a difference between the gears reported in the GEAR_TYPE variable and in the Metier code on level 4.
+
+As there are many minor metier codes, only the top 10 metier codes by fishing days are shown in the plot below, the rest are grouped into 'Other'.
+
+The first plot is showing the herring landings by metier level at EU level. 
+
+The second plot is showing the herring landings by metier level 6 at country level, where the y-axis is not fixed. 
+
+The third plot is showing the herring landings by metier level 6 at country level, where the y-axis is fixed, so it is easier to get an overview of the relative fishing effort by MS. 
+
+The fourth plot is showing the herring landings by metier level 6 within CS fleet at country level, where the y-axis is shown as percentage.
+
+
+```{r M4, fig.dim= c(6, 4)}
+HER_Metier_EU1 <- landings_EU2 %>% filter(area %in% c("27.4.a")) %>% group_by(Year, Metier) %>%
+  summarize(TON_HER=sum(TON_HER, na.rm=T), TON_TOT=sum(TON_TOT, na.rm=T))
+
+HER_Metier_EU2 <- HER_Metier_EU1 %>% group_by(Metier) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T), TON_TOT=mean(TON_TOT, na.rm=T))
+
+HER_Metier_EU3 <- HER_Metier_EU2[HER_Metier_EU2$TON_HER>10,]
+
+ggplot(HER_Metier_EU3, aes(x = reorder(Metier, -TON_HER), y = TON_HER)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(
+    title = "Landings of Herring (HER) by Metier",
+    x = "Metier",
+    y = "Avererage annual landings of Herring 2013-2023 (ton)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+HER_Metier_EU2$pct_HER <- (HER_Metier_EU2$TON_HER / HER_Metier_EU2$TON_TOT) * 100
+
+HER_Metier_EU2_sort <- HER_Metier_EU2 %>% filter(pct_HER>20) %>%
+  arrange(desc(pct_HER))
+
+ggplot(HER_Metier_EU2_sort, aes(x = reorder(Metier, -pct_HER), y = pct_HER)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(
+    title = "Percentage of Herring (HER) by Metier",
+    x = "Metier",
+    y = "Avererage annual percentage of Herring landings 2013-2023 (pct_HER)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+HER_Metier_EU1 <- landings_EU2 %>% filter(area %in% c("27.4.a")) %>% group_by(Year, area, Metier) %>%
+  summarize(TON_HER=sum(TON_HER, na.rm=T), TON_TOT=sum(TON_TOT, na.rm=T))
+
+HER_Metier_EU2 <- HER_Metier_EU1 %>% group_by(area, Metier) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T), TON_TOT=mean(TON_TOT, na.rm=T))
+
+# Find top 10 Metiers by total fishing days
+top_metiers <- HER_Metier_EU2 %>%
+  group_by(Metier) %>%
+  summarise(Total = sum(TON_HER)) %>%
+  top_n(10, Total) %>%
+  pull(Metier)
+
+# Relabel others as "Other"
+HER_Metier_EU2 <- HER_Metier_EU2 %>%
+  mutate(Metier = ifelse(Metier %in% top_metiers, Metier, "Other"))
+
+# Define color vector
+metier_colors <- setNames(
+  RColorBrewer::brewer.pal(10, "Set3"),  # 10 distinct colors
+  top_metiers
+)
+metier_colors["Other"] <- "#B0B0B0"  # Light grey for 'Other'
+
+ggplot(HER_Metier_EU2, aes(x = factor(area), y = TON_HER, fill = Metier)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = metier_colors) +
+  labs(title = "FDI herring landings - STC-Herring EU (Top 10 Metiers)", 
+       x = "Area", y = "Average annual herring landings 2013-2023 (ton)", fill = "Top 10 metiers") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+#by MS
+HER_Metier_MS1 <- landings_MS2 %>% filter(area %in% c("27.4.a") & country %in% c('Denmark','Estonia','Finland','Germany','Latvia','Lithuania','Poland','Sweden','United Kingdom')) %>% group_by(Year, area, country, metier) %>%
+  summarise(TON_HER=sum(TON_HER, na.rm=T))
+
+HER_Metier_MS2 <- HER_Metier_MS1 %>% group_by(area, country, metier) %>%
+  summarise(TON_HER=mean(TON_HER, na.rm=T))
+
+# Find top 10 Metiers by total fishing days
+top_metiersMS <- HER_Metier_MS2 %>%
+  group_by(metier) %>%
+  summarise(Total = sum(TON_HER)) %>%
+  top_n(10, Total) %>%
+  pull(metier)
+
+# Relabel others as "Other"
+HER_Metier_MS2 <- HER_Metier_MS2 %>%
+  mutate(metier = ifelse(metier %in% top_metiersMS, metier, "Other"))
+
+# Define color vector
+metier_colors <- setNames(
+  RColorBrewer::brewer.pal(10, "Set3"),  # 10 distinct colors
+  top_metiersMS
+)
+metier_colors["Other"] <- "#B0B0B0"  # Light grey for 'Other'
+
+ggplot(HER_Metier_MS2, aes(x = factor(area), y = TON_HER, fill = metier)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = metier_colors) +
+  facet_wrap(~ country, scales = "free_y") +
+  labs(
+    title = "FDI herring landings by area and Metier - variable y axis",
+    x = "Area",
+    y = "Average annual herring landings 2013-2023 (ton)",
+    fill = "Top 10 metiers"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    strip.text = element_text(face = "bold")
+  )
+
+ggplot(HER_Metier_MS2, aes(x = factor(area), y = TON_HER, fill = metier)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = metier_colors) +
+  facet_wrap(~ country) +
+  labs(
+    title = "FDI herring landings by area and Metier - fixed y axis",
+    x = "Area",
+    y = "Average annual herring landings 2013-2023 (ton)",
+    fill = "Top 10 metiers"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    strip.text = element_text(face = "bold")
+  )
+
+ggplot(HER_Metier_MS2, aes(x = factor(area), y = TON_HER, fill = metier)) +
+  geom_bar(stat = "identity", position = "fill") +
+  scale_fill_manual(values = metier_colors) +
+  facet_wrap(~ country, scales = "free_x") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+    title = "FDI Herring landings – % herring landings by Metier",
+    x = "Area",
+    y = "Average annual % herring landings 2013-2023",
+    fill = "Top 10 metiers"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    strip.text = element_text(face = "bold")
+  )
+
+```
+
+
+## Maps by rectangle {.tabset}
+
+Maps showing average annual landings of herring 2013-2023 by ICES rectangle, based on public FDI data. 
+Main selected metiers. 
+Note: OTM and PTM have been grouped into OTM!
+
+### OTM_SPF_>0
+
+```{r MR1, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by rectangle. Average annual landings 2013-2023 metier: OTM_SPF_>0_0_0"}
+
+knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_Herring/Maps/FDI_HER_OTM_SPF_gt0.png")
+
+```
+
+### OTM_SPF_16t31
+
+```{r MR2, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by rectangle. Average annual landings 2013-2023 metier: OTM_SPF_16t31_0_0"}
+
+knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_Herring/Maps/FDI_HER_OTM_SPF_16t31.png")
+
+```
+
+### OTM_SPF_32t69
+
+```{r MR3, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by rectangle. Average annual landings 2013-2023 metier: OTM_SPF_32t69_0_0"}
+
+knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_Herring/Maps/FDI_HER_OTM_SPF_32t69.png")
+
+```
+
+### OTM_SPF_32t89
+
+```{r MR4, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by rectangle. Average annual landings 2013-2023 metier: OTM_SPF_32t89_0_0"}
+
+knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_Herring/Maps/FDI_HER_OTM_SPF_32t89.png")
+
+```
+
+### GNS_SPF_32t89
+
+```{r MR5, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by rectangle. Average annual landings 2013-2023 metier: GNS_SPF_32t89_0_0"}
+
+knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_Herring/Maps/FDI_HER_GNS_SPF_32t89.png")
+
+```
+
+### PS_SPF_16t31
+
+```{r MR6, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by rectangle. Average annual landings 2013-2023 metier: PS_SPF_16t31_0_0"}
+
+knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_Herring/Maps/FDI_HER_PS_SPF_16t31.png")
+
+```
