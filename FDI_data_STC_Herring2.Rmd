@@ -135,7 +135,15 @@ landings_EU2 <- landings_EU1 %>% filter(is.na(EEZ.Indicator) | EEZ.Indicator != 
 landings_MS2 <- landings_MS1 %>% filter(is.na(eez_indicator) | eez_indicator != 'UK')
 landings_rect2 <- landings_rect1 
 
+#Correct >0 metier if reported in MESH_SIZE_RANGE
+landings_EU2$Metier[landings_EU2$Metier == "OTM_SPF_>0_0_0" & landings_EU2$Mesh.size.range=='16D32'] <- "OTM_SPF_16-31_0_0"
+landings_EU2$Metier[landings_EU2$Metier == "PTM_SPF_>0_0_0" & landings_EU2$Mesh.size.range=='16D32'] <- "PTM_SPF_16-31_0_0"
 
+landings_MS2$metier[landings_MS2$metier == "OTM_SPF_>0_0_0" & landings_MS2$mesh_size_range=='16D32'] <- "OTM_SPF_16-31_0_0"
+landings_MS2$metier[landings_MS2$metier == "PTM_SPF_>0_0_0" & landings_MS2$mesh_size_range=='16D32'] <- "PTM_SPF_16-31_0_0"
+
+landings_rect2$metier[landings_rect2$metier == "OTM_SPF_>0_0_0" & landings_rect2$mesh_size_range=='16D32'] <- "OTM_SPF_16-31_0_0"
+landings_rect2$metier[landings_rect2$metier == "PTM_SPF_>0_0_0" & landings_rect2$mesh_size_range=='16D32'] <- "PTM_SPF_16-31_0_0"
 ```
 
 ```{r Data}
@@ -244,6 +252,23 @@ HER_OTM_SPF_16t31 <- landings_rect_y2[landings_rect_y2$metier_gr=="OTM_SPF_16-31
 HER_OTM_SPF_gt0 <- landings_rect_y2[landings_rect_y2$metier_gr=="OTM_SPF_>0_0_0",]
 HER_OTM_SPF_32t69 <- landings_rect_y2[landings_rect_y2$metier_gr=="OTM_SPF_32-69_0_0",]
 HER_PS_SPF_16t31 <- landings_rect_y2[landings_rect_y2$metier_gr=="PS_SPF_16-31_0_0",]
+HER_FYK_SPF_gt0 <- landings_rect_y2[landings_rect_y2$metier_gr=="FYK_SPF_>0_0_0",]
+
+#Level5
+landings_rect2$MetL5 <- substr(landings_rect2$metier,1,7)
+landings_rect2$MetL5_gr <- landings_rect2$MetL5
+landings_rect2$MetL5_gr[landings_rect2$MetL5_gr %in% c('OTM_SPF', 'PTM_SPF')] <- 'OTM_SPF'
+
+landings_rect_ML5_y <- landings_rect2 %>% filter(species=='HER') %>%
+  group_by(year, MetL5_gr, icesname) %>%
+  summarize(TON_HER=sum(TON_HER, na.rm=T))
+
+landings_rect_ML5_y2 <- landings_rect_ML5_y %>% 
+  group_by(MetL5_gr, icesname) %>%
+  summarize(TON_HER=mean(TON_HER, na.rm=T))
+
+#Select relevant level 5 metiers
+HER_OTM_SPF<- landings_rect_ML5_y2[landings_rect_ML5_y2$MetL5_gr=="OTM_SPF",]
 
 #Export as shapefiles
 HER_OTM_SPF_32t89_geo <- merge(HER_OTM_SPF_32t89, rect, by="icesname", all.x=TRUE)
@@ -263,6 +288,12 @@ suppressWarnings(suppressMessages(st_write(HER_OTM_SPF_32t69_geo, "Q:\\20-forskn
 
 HER_PS_SPF_16t31_geo <- merge(HER_PS_SPF_16t31, rect, by="icesname", all.x=TRUE)
 suppressWarnings(suppressMessages(st_write(HER_PS_SPF_16t31_geo, "Q:\\20-forskning\\20-dfad\\users\\joeg\\home\\VMS\\250211_STC_Herring\\Shp\\FDI_HER_PS_SPF_16t31.shp", delete_dsn = TRUE, quiet = TRUE)))
+
+HER_FYK_SPF_gt0_geo <- merge(HER_FYK_SPF_gt0, rect, by="icesname", all.x=TRUE)
+suppressWarnings(suppressMessages(st_write(HER_FYK_SPF_gt0_geo, "Q:\\20-forskning\\20-dfad\\users\\joeg\\home\\VMS\\250211_STC_Herring\\Shp\\FDI_HER_FYK_SPF_gt0.shp", delete_dsn = TRUE, quiet = TRUE)))
+
+HER_OTM_SPF_geo <- merge(HER_OTM_SPF, rect, by="icesname", all.x=TRUE)
+suppressWarnings(suppressMessages(st_write(HER_OTM_SPF_geo, "Q:\\20-forskning\\20-dfad\\users\\joeg\\home\\VMS\\250211_STC_Herring\\Shp\\FDI_HER_OTM_SPF.shp", delete_dsn = TRUE, quiet = TRUE)))
 
 ```
 
@@ -1201,13 +1232,14 @@ Maps showing average annual landings of herring 2013-2023 by ICES rectangle, bas
 Main selected metiers. 
 Note: OTM and PTM have been grouped into OTM!
 
-### OTM_SPF_>0
+### OTM_SPF
 
-```{r MR1, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by rectangle. Average annual landings 2013-2023 metier: OTM_SPF_>0_0_0"}
+```{r MR1, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by rectangle. Average annual landings 2013-2023 level 5 metier: OTM_SPF"}
 
-knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_Herring/Maps/FDI_HER_OTM_SPF_gt0.png")
+knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_Herring/Maps/FDI_HER_OTM_SPF.png")
 
 ```
+
 
 ### OTM_SPF_16t31
 
@@ -1233,9 +1265,17 @@ knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_
 
 ```
 
+### OTM_SPF_>0
+
+```{r MR5, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by rectangle. Average annual landings 2013-2023 metier: OTM_SPF_>0_0_0"}
+
+knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_Herring/Maps/FDI_HER_OTM_SPF_gt0.png")
+
+```
+
 ### GNS_SPF_32t89
 
-```{r MR5, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by rectangle. Average annual landings 2013-2023 metier: GNS_SPF_32t89_0_0"}
+```{r MR6, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by rectangle. Average annual landings 2013-2023 metier: GNS_SPF_32t89_0_0"}
 
 knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_Herring/Maps/FDI_HER_GNS_SPF_32t89.png")
 
@@ -1243,8 +1283,45 @@ knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_
 
 ### PS_SPF_16t31
 
-```{r MR6, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by rectangle. Average annual landings 2013-2023 metier: PS_SPF_16t31_0_0"}
+```{r MR7, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by rectangle. Average annual landings 2013-2023 metier: PS_SPF_16t31_0_0"}
 
 knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_Herring/Maps/FDI_HER_PS_SPF_16t31.png")
+
+```
+
+### FYK_SPF_gt0
+
+```{r MR8, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by rectangle. Average annual landings 2013-2023 metier: FYK_SPF_>0_0_0"}
+
+knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_Herring/Maps/FDI_HER_FYK_SPF_gt0.png")
+
+```
+
+
+## Plots by gear, country, area and year {.tabset}
+
+Plots showing herring landings by gear, country, area and year.
+
+### Gillnet
+
+```{r G1, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by gear, country, area and year. Gillnets"}
+
+knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_Herring/Plots/GILLNETS.png")
+
+```
+
+### Fykenets
+
+```{r G2, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by gear, country, area and year. Fykenets"}
+
+knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_Herring/Plots/FYKES.png")
+
+```
+
+### Trawls
+
+```{r G3, , echo=FALSE, out.width="80%", fig.cap="FDI herring landings by gear, country, area and year. Trawls"}
+
+knitr::include_graphics("Q:/20-forskning/20-dfad/users/joeg/home/VMS/250211_STC_Herring/Plots/TRAWLS.png")
 
 ```
