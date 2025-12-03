@@ -118,6 +118,9 @@ cs_data3$LANDED_BIN <- factor(cut(cs_data3$annual.landings,
                                labels = c("1–100", "100–500", "500–1000", "1000–5000", "5000–10000", ">10000"),
                                include.lowest = TRUE))
 
+#remove rectangles with less than 1 ton landed catches
+cs_data3 <- cs_data3 %>% filter(!is.na(LANDED_BIN))
+
 # Plot landings by CS ####
 ggplot() +
   geom_sf(data = cs_data3, aes(fill = LANDED_BIN)) +
