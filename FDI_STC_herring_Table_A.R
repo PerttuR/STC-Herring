@@ -6,7 +6,7 @@
 # UPDATE:       04.7.2025
 
 #clean the R environment
-#rm(list = ls())
+rm(list = ls())
 
 library(dplyr)
 library(lubridate)
