@@ -21,14 +21,32 @@ codePath  <- paste0(path, "prog/")   # Location to store R scripts
 outPath   <- paste0(path, "out/",run.year)   # Location to store the results
 dataPath  <- paste0(path, "orig/",run.year, "/")   # Location to store the data
 
-# Check if zip file exists:
-file.exists(paste0(dataPath, "2024_fdi_catches.zip"))
+# Select file name and location based on year data was disseminated
+zip.file <- paste0(
+  dataPath,
+  if (run.year == 2024) {
+    "2024_fdi_catches.zip"
+  } else if (run.year == 2025) {
+    "2025_Effort-landings-catches-capacity-biological.zip"
+  } else {
+    stop("Tuntematon vuosi: ", run.year)
+  }
+)
+
+
+# Message if file exists
+if (file.exists(zip.file)) {
+  message("File exists in folder: ", zip.file)
+} else {
+  message("File not found: ", zip.file)
+}
+
 
 # UNZIP the zip archive
-unzip(paste0(dataPath, "2024_fdi_catches.zip"), exdir = dataPath, overwrite = TRUE, junkpaths = TRUE)
+unzip(paste0(zip.file), exdir = dataPath, overwrite = TRUE, junkpaths = TRUE)
 
 # Read data in
-yearsToSubmit <- c(2013:(run.year-2))
+yearsToSubmit <- c(2013:(run.year-1))
 
 # Looping through the years to read in CSV data:
 for (year in yearsToSubmit) {
@@ -89,7 +107,7 @@ ggplot(FDI_LAN_HER_TRAWL_5_tons, aes(x=sub_region, y=TON)) +
   theme_bw() +  facet_grid(year~country) +
   labs(x="Area", y="Ton herring landed") +
   theme(axis.text.x = element_text(size=8, angle=90), plot.title=element_text(size=8), 
-        axis.title = element_text(size=8)) + ggtitle("Herring TRAWL catches by Country and subregion")
+        axis.title = element_text(size=8)) + ggtitle("Herring TRAWL landed catches by Country and subregion")
 
 #PLOT diagrams for gear = all TRAWLS LOGARITMIC
 ggplot(FDI_LAN_HER_TRAWL_5_tons, aes(x = sub_region, y = TON)) +
@@ -100,7 +118,7 @@ ggplot(FDI_LAN_HER_TRAWL_5_tons, aes(x = sub_region, y = TON)) +
   theme(axis.text.x = element_text(size = 8, angle = 90),
         plot.title = element_text(size = 8),
         axis.title = element_text(size = 8)) +
-  ggtitle("Herring TRAWL catches by Country and subregion LOGARITMIC") +
+  ggtitle("Herring TRAWL landed catches by Country and subregion LOGARITMIC") +
   scale_y_log10(
     breaks = c(1, 10, 100, 1000, 10000),  # Custom tick marks
     labels = c("", "", "", "", "")  # Custom labels
